@@ -45,8 +45,31 @@ app.get('/getItem', function(req, res){
   });
 });//end getItem
 
-app.post('/deleteItem', function(req, res){
-  pg.connect(connectionString, function( err, client, done){
+app.post( '/deleteItem', urlencodedParser, function( req, res ){
+  console.log( 'in deleteUser: ' + req.body.id );
+  pg.connect( connectionString, function( err, client, done ){
     client.query('DELETE from users WHERE id=($1)', [req.body.id]);
   });
 });
+
+app.post( '/updateStatus', urlencodedParser, function( req, res ){
+  console.log( 'in updateStatus: ' + req.body.status );
+  pg.connect( connectionString, function( err, client, done ){
+    client.query('UPDATE users SET status=true WHERE id=($1)', [req.body.id]);
+  });
+});
+
+app.get( '/getStatus', urlencodedParser, function(req, res){
+  console.log(req.body.status);
+  var statusArray = [];
+  pg.connect(connectionString, function(err, client, done){
+    var status = client.query('SELECT status FROM users');
+    status.on('row', function(row){
+      statusArray.push(row);
+    });
+    status.on('end', function(){
+      return res.json(statusArray);
+    });
+  });
+  console.log("in getStatus: " + statusArray);
+}); //end get status
